@@ -94,7 +94,14 @@ pip3 install --upgrade pip
 pip3 install netaddr eventlet msgpack
 ```
 
-### Step 5: Clone/Download Project
+### Step 5: Install Wireshark (for Packet Analysis)
+```bash
+sudo apt install wireshark -y
+sudo usermod -aG wireshark $USER
+newgrp wireshark
+```
+
+### Step 6: Clone/Download Project
 ```bash
 cd ~
 git clone <your-repo-url>  # Replace with your repository
@@ -142,7 +149,22 @@ mininet>
 
 ---
 
-### Step 3: Run Test Scenarios
+### Step 3: Start Packet Capture (Terminal 3)
+
+Open **Terminal 3** to capture network traffic with Wireshark:
+
+```bash
+sudo wireshark &
+```
+
+**In Wireshark GUI:**
+1. Select interface `s1-eth0` (the switch interface)
+2. Click the **Start capturing packets** button (blue shark icon)
+3. Keep Wireshark running during all tests
+
+---
+
+### Step 4: Run Test Scenarios
 
 Once you see the `mininet>` prompt, execute the test commands below.
 
@@ -164,6 +186,20 @@ mininet> h1 ping -c 10 h2
 ICMP packets: 20 (10 echo + 10 reply)
 ```
 
+#### Wireshark Analysis for ICMP Test
+
+**In Wireshark GUI:**
+1. Apply filter: `icmp`
+2. Look for:
+   - **ICMP Echo Request** (Type 8) - Ping request from h1
+   - **ICMP Echo Reply** (Type 0) - Response from h2
+   - Source IP: `10.0.0.1`, Destination IP: `10.0.0.2`
+3. Verify packet count matches controller output (~20 packets)
+4. Note the TTL (Time To Live) value in each packet
+5. Check timestamp differences between requests and replies
+
+**Screenshot:** Capture Wireshark ICMP filter results
+
 ---
 
 ### Scenario 2: TCP Protocol Test (iPerf)
@@ -181,6 +217,21 @@ mininet> h1 iperf -c 10.0.0.3 -t 5
 TCP packets: 50+
 ```
 
+#### Wireshark Analysis for TCP Test
+
+**In Wireshark GUI:**
+1. Apply filter: `tcp.port == 5001`
+2. Look for:
+   - **TCP SYN** packet - Initial connection (h1 → h3)
+   - **TCP ACK** packets - Acknowledgments
+   - **TCP FIN** packet - Connection close
+   - Protocol sequence shows TCP three-way handshake
+3. Verify source `10.0.0.1` and destination `10.0.0.3` on port 5001 (iPerf default)
+4. Observe data transfer packets with varying payload sizes
+5. Confirm total TCP packet count
+
+**Screenshot:** Capture Wireshark TCP handshake sequence
+
 ---
 
 ### Scenario 3: UDP Protocol Test (iPerf)
@@ -197,6 +248,21 @@ mininet> h2 iperf -c 10.0.0.4 -u -t 5
 ```
 UDP packets: 50+
 ```
+
+#### Wireshark Analysis for UDP Test
+
+**In Wireshark GUI:**
+1. Apply filter: `udp.port == 5001`
+2. Look for:
+   - **UDP packets** - No handshake (connectionless protocol)
+   - Source `10.0.0.2` to destination `10.0.0.4` on port 5001
+   - Consistent packet sizes (typical iPerf UDP payloads ~1470 bytes)
+   - No SYN/ACK sequence (unlike TCP)
+3. Observe unidirectional traffic from server port to client
+4. Note that UDP has minimal overhead compared to TCP
+5. Verify UDP packet count matches controller statistics
+
+**Screenshot:** Capture Wireshark UDP data stream
 
 ---
 
