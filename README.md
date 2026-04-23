@@ -57,10 +57,14 @@ sdn_project/
 ├── README.md                   # Project documentation (this file)
 │
 └── screenshots/                # Proof of execution images
-    ├── ping.png               # ICMP test screenshot
-    ├── tcp.png                # TCP test screenshot
-    ├── udp.png                # UDP test screenshot
-    └── output.png             # Controller console output
+    ├── icmp_test.png          # ICMP ping test terminal output
+    ├── tcp_test.png           # TCP iPerf test terminal output
+    ├── udp_test.png           # UDP iPerf test terminal output
+    ├── wireshark_icmp.png     # ICMP packet analysis (Wireshark)
+    ├── wireshark_tcp.png      # TCP packet analysis (Wireshark)
+    ├── wireshark_udp.png      # UDP packet analysis (Wireshark)
+    ├── controller_output.png  # Ryu controller statistics
+    └── mininet_setup.png      # Network initialization (optional)
 ```
 
 ---
@@ -198,7 +202,10 @@ ICMP packets: 20 (10 echo + 10 reply)
 4. Note the TTL (Time To Live) value in each packet
 5. Check timestamp differences between requests and replies
 
-**Screenshot:** Capture Wireshark ICMP filter results
+**Wireshark Screenshot (ICMP Test):**
+![ICMP Wireshark Capture](screenshots/wireshark_icmp.png)
+
+*Figure: Wireshark filter showing ICMP Echo Request and Reply packets between hosts*
 
 ---
 
@@ -230,7 +237,10 @@ TCP packets: 50+
 4. Observe data transfer packets with varying payload sizes
 5. Confirm total TCP packet count
 
-**Screenshot:** Capture Wireshark TCP handshake sequence
+**Wireshark Screenshot (TCP Test):**
+![TCP Wireshark Capture](screenshots/wireshark_tcp.png)
+
+*Figure: Wireshark filter showing TCP three-way handshake (SYN, SYN-ACK, ACK) and data transfer*
 
 ---
 
@@ -262,7 +272,10 @@ UDP packets: 50+
 4. Note that UDP has minimal overhead compared to TCP
 5. Verify UDP packet count matches controller statistics
 
-**Screenshot:** Capture Wireshark UDP data stream
+**Wireshark Screenshot (UDP Test):**
+![UDP Wireshark Capture](screenshots/wireshark_udp.png)
+
+*Figure: Wireshark filter showing UDP data packets flowing directly from source to destination (no handshake)*
 
 ---
 
@@ -330,31 +343,170 @@ After running all test scenarios, the controller output should resemble:
 
 ## Screenshots Section
 
-### ICMP Test (Ping)
-![Ping Test](screenshots/ping.png)
+### ⚠️ Important: Displaying Screenshots
 
-*Figure 1: ICMP echo requests and replies between hosts. Controller logs show ICMP packet classification and count.*
+For images to display correctly on GitHub:
 
----
+1. **File Placement:** All screenshots must be in the `screenshots/` folder
+2. **File Naming:** Filenames are **case-sensitive** - use exact names below
+3. **Git Tracking:** Commit screenshots using:
+   ```bash
+   git add screenshots/*.png
+   git commit -m "Add execution screenshots"
+   git push
+   ```
+4. **Verification:** After pushing, verify images appear on GitHub repository page
 
-### TCP Test (iPerf)
-![TCP Test](screenshots/tcp.png)
-
-*Figure 2: TCP traffic generation and transmission between hosts. Controller classifies and counts TCP packets in real-time.*
-
----
-
-### UDP Test (iPerf)
-![UDP Test](screenshots/udp.png)
-
-*Figure 3: UDP protocol traffic flowing through the network. Controller distinguishes UDP packets from TCP and ICMP.*
+> **If images are not visible:** Ensure you have cloned the full repository with `git clone` and the `screenshots/` folder is present locally.
 
 ---
 
-### Controller Output
-![Controller Output](screenshots/output.png)
+### 1. ICMP Test (Ping) - Terminal Output
 
-*Figure 4: Ryu controller console showing real-time packet classification, protocol statistics, and summary report after all tests.*
+![ICMP Test Output](screenshots/icmp_test.png)
+
+**Expected filename:** `screenshots/icmp_test.png`
+
+Shows Mininet terminal output of ICMP ping test between h1 (10.0.0.1) and h2 (10.0.0.2) with:
+- Echo request/reply packets
+- TTL values
+- Response times
+- Statistics (0% packet loss)
+
+---
+
+### 2. TCP Test (iPerf) - Terminal Output
+
+![TCP Test Output](screenshots/tcp_test.png)
+
+**Expected filename:** `screenshots/tcp_test.png`
+
+Shows Mininet terminal output of TCP iPerf test with:
+- Server initialization on h3 (port 5001)
+- Client connection from h1
+- Bandwidth statistics (e.g., 9.50 MBits/sec)
+- Connection duration (0-5 sec interval)
+
+---
+
+### 3. UDP Test (iPerf) - Terminal Output
+
+![UDP Test Output](screenshots/udp_test.png)
+
+**Expected filename:** `screenshots/udp_test.png`
+
+Shows Mininet terminal output of UDP iPerf test with:
+- Server initialization on h4 (port 5001, UDP mode)
+- Client connection from h2
+- Datagram statistics (1470 byte payloads)
+- Bandwidth and jitter measurements
+
+---
+
+### 4. ICMP Packets - Wireshark Analysis
+
+![ICMP Wireshark](screenshots/wireshark_icmp.png)
+
+**Expected filename:** `screenshots/wireshark_icmp.png`
+
+Wireshark packet capture filtered by `icmp`:
+- ICMP Echo Request packets (Type 8)
+- ICMP Echo Reply packets (Type 0)
+- Source: 10.0.0.1, Destination: 10.0.0.2
+- Complete handshake visible with timestamps
+
+---
+
+### 5. TCP Packets - Wireshark Analysis
+
+![TCP Wireshark](screenshots/wireshark_tcp.png)
+
+**Expected filename:** `screenshots/wireshark_tcp.png`
+
+Wireshark packet capture filtered by `tcp.port == 5001`:
+- **TCP Three-Way Handshake:**
+  - SYN (from 10.0.0.1:47148 to 10.0.0.3:5001)
+  - SYN-ACK (return)
+  - ACK (connection established)
+- Data transfer packets with payloads
+- Protocol details visible in packet inspector
+
+---
+
+### 6. UDP Packets - Wireshark Analysis
+
+![UDP Wireshark](screenshots/wireshark_udp.png)
+
+**Expected filename:** `screenshots/wireshark_udp.png`
+
+Wireshark packet capture filtered by `udp.port == 5001`:
+- UDP data packets (connectionless, no handshake)
+- Source: 10.0.0.2:port, Destination: 10.0.0.4:5001
+- Consistent 1470-byte UDP datagram payloads
+- Direct transmission without acknowledgment
+
+---
+
+### 7. Ryu Controller Output - Traffic Statistics
+
+![Controller Output](screenshots/controller_output.png)
+
+**Expected filename:** `screenshots/controller_output.png`
+
+Ryu controller console showing:
+- **Real-time packet statistics** displayed as packets arrive
+- **Summary table** with protocol breakdown:
+  - TCP: count and percentage
+  - UDP: count and percentage
+  - ICMP: count and percentage
+  - OTHER: unclassified packets
+- **Visual bar chart** using `#` characters for comparison
+- **Total packet count** across all protocols
+
+---
+
+### 8. Mininet Network Initialization
+
+![Mininet Setup](screenshots/mininet_setup.png)
+
+**Expected filename:** `screenshots/mininet_setup.png` (optional)
+
+Shows Mininet CLI startup with:
+- Host configurations (h1-h4 with IP addresses)
+- Controller connection
+- Switch creation
+- Network readiness message
+- "mininet>" prompt ready for commands
+
+---
+
+## Screenshot Storage Instructions
+
+Create the `screenshots/` folder if it doesn't exist:
+
+```bash
+mkdir -p screenshots
+```
+
+Copy your captured images into this folder:
+
+```bash
+# Example: after taking screenshots
+cp ~/Pictures/icmp_test.png screenshots/
+cp ~/Pictures/tcp_test.png screenshots/
+cp ~/Pictures/udp_test.png screenshots/
+cp ~/Pictures/udp_test.png screenshots/
+cp ~/Pictures/wireshark_icmp.png screenshots/
+cp ~/Pictures/wireshark_tcp.png screenshots/
+cp ~/Pictures/wireshark_udp.png screenshots/
+cp ~/Pictures/controller_output.png screenshots/
+```
+
+Verify files are present:
+
+```bash
+ls -la screenshots/
+```
 
 ---
 
